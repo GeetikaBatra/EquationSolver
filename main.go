@@ -8,22 +8,30 @@ import (
 	"strings"
 	"regexp"
 )
+////Struct that contains coefficiants of equation
 type coefficiant struct {
 	a float64
 	b float64
 	c float64
     
 }
+//resulting struct
 type result struct{
 	x float64
 	y float64
 }
+//Initializes the coeff struct with input coefficiants
+// Utilized in tests
 func NewCoeff(a,b,c float64) *coefficiant{
 	return &coefficiant{a:a,b:b,c:c}
 }
+
+//Initializes empty coefficiants
 func EmptyNewCoeff() *coefficiant{
 	return &coefficiant{}
 }
+
+//HTTP Server
 func solver(w http.ResponseWriter, r *http.Request) {
 	if r.URL.Path != "/equate" {
         http.Error(w, "404 not found.", http.StatusNotFound)
@@ -47,6 +55,7 @@ func solver(w http.ResponseWriter, r *http.Request) {
 		}
 }
 
+//Checks equation type using REGEX and extracts coefficaints from it
 func (coeff *coefficiant)ValidateEquation(eq_ string){
 
 		res, err := regexp.MatchString("\\d+x[+-]?\\d+y\\=\\d+", eq_)
@@ -118,6 +127,8 @@ func (coeff *coefficiant)ValidateEquation(eq_ string){
 		return 
 }
 
+//Extracts all the numbers from an eqaution.
+//Uses Regex to find the numbers and converts it to float
 func(coeff *coefficiant) ExtractCoeffFromString(eq_ string) []float64{
 
 	re := regexp.MustCompile("[-]?[0-9]+")
@@ -132,6 +143,8 @@ func(coeff *coefficiant) ExtractCoeffFromString(eq_ string) []float64{
 	return num_arr
 }
 
+//Uses Crammers rule to solve the equation
+//Improvement: Use LCM to solve instead of crammer rule.
 func FindDeterminents(first_equation, second_equation string) *result{
 
 	var deter float64
@@ -151,6 +164,7 @@ func FindDeterminents(first_equation, second_equation string) *result{
 	return &result
 
 }
+
 func main() {
 	http.HandleFunc("/equate", solver)
 	log.Fatal(http.ListenAndServe(":8080", nil))
